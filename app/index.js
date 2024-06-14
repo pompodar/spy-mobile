@@ -1,75 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import Checkbox from 'expo-checkbox';
-import { useNavigation } from '@react-navigation/native';
-import { signInWithGoogle, firebaseAuth } from "./config/firebase";
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { signInWithGoogle } from "./config/firebase";
 import { auth } from "./config/firebase";
 import { onAuthStateChanged } from 'firebase/auth';
-import { router } from 'expo-router';
+import { router, Link } from 'expo-router';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { LinearGradient } from 'expo-linear-gradient';
 
-export default function Login({ status, canResetPassword }) {
-    const [user, setUser] = useState(null);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [remember, setRemember] = useState(false);
-    const [errors, setErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
+const Stack = createStackNavigator();
 
-    const navigation = useNavigation();
+function Login({ status }) {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-          setUser(currentUser || '');
-          
-          if (currentUser) {
-            router.replace('/GameLobby');
-          }
+            if (currentUser) {
+                router.push('/GameLobby');
+            }
         });
         return () => unsubscribe();
-      }, []);
-
-    useEffect(() => {
-        return () => {
-            setPassword('');
-        };
     }, []);
-
-    useEffect(() => {
-        if (user) {
-            router.replace('/20');
-        }
-    }, []);
-
-    const validate = () => {
-        const errors = {};
-        if (!email) {
-            errors.email = 'Email is required';
-        }
-        if (!password) {
-            errors.password = 'Password is required';
-        }
-        return errors;
-    };
-
-    const onSubmit = () => {
-        const validationErrors = validate();
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            return;
-        }
-
-        setIsSubmitting(true);
-        auth.signInWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                console.log('User logged in successfully:', userCredential);
-                // Redirect or perform actions after successful login
-                setIsSubmitting(false);
-            })
-            .catch((error) => {
-                console.error('Error logging in:', error);
-                setIsSubmitting(false);
-            });
-    };
 
     const submitWithGoogle = async () => {
         try {
@@ -80,58 +30,44 @@ export default function Login({ status, canResetPassword }) {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Log in</Text>
-
+        <LinearGradient
+            colors={['rgba(68,58,85,1)', 'rgba(136,51,81,1)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.container}
+        >
+            <Text style={styles.title}>Welcome to Spy!</Text>
+            <Image style={styles.logo} source={require('../assets/android-chrome-512x512.png')} />
             {status && <Text style={styles.status}>{status}</Text>}
-
             <View style={styles.formContainer}>
-                <TouchableOpacity onPress={submitWithGoogle} style={styles.googleButton}>
-                    <Text style={styles.googleButtonText}>Log in with Gmail</Text>
-                </TouchableOpacity>
-
-                <Text style={styles.orText}>Or with mail</Text>
-
-                <TextInput
-                    style={styles.input}
-                    placeholder="Email"
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                />
-                {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
-
-                <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    autoCapitalize="none"
-                />
-                {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
-
-                <View style={styles.checkboxContainer}>
-                    <Checkbox
-                        value={remember}
-                        onValueChange={setRemember}
-                        color={remember ? '#6A0DAD' : undefined}
-                    />
-                    <Text style={styles.checkboxLabel}>Remember me</Text>
-                </View>
-
-                {canResetPassword && (
-                    <TouchableOpacity onPress={() => navigation.navigate('PasswordReset')}>
-                        <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
-                    </TouchableOpacity>
-                )}
-
-                <TouchableOpacity onPress={onSubmit} style={styles.loginButton} disabled={isSubmitting}>
-                    <Text style={styles.loginButtonText}>Log in</Text>
+                <TouchableOpacity onPress={submitWithGoogle}>
+                    <LinearGradient
+                        colors={['rgba(68,58,85,1)', 'rgba(136,51,81,1)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.container}
+                    >
+                        <Text style={styles.googleButtonText}>Log in with Gmail</Text>
+                    </LinearGradient>
                 </TouchableOpacity>
             </View>
-        </View>
+            <Link style={styles.rulesButtonText} href="/Rules/">Learn the rules</Link>
+        </LinearGradient>
+    );
+}
+
+export default function App() {
+    return (
+        <NavigationContainer independent={true}>
+            <Stack.Navigator initialRouteName="Welcome">
+                <Stack.Screen
+                    name="Login" component={Login}
+                    options={{
+                        headerShown: false,
+                    }}
+                />
+            </Stack.Navigator>
+        </NavigationContainer>
     );
 }
 
@@ -143,18 +79,38 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    logo: {
+        width: 146,
+        height: 146,
+        marginBottom: 16,
+        borderRadius: '50%',
+    },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#FFD700',
         marginBottom: 16,
     },
+    textTitle: {
+        fontSize: 18,
+        color: '#FFD700',
+        marginBottom: 6,
+    },
+    text: {
+        fontSize: 14,
+        alignSelf: 'flex-start',
+        fontWeight: 'normal',
+        color: '#FFD700',
+        marginBottom: 4,
+    },
     status: {
         color: 'green',
         marginBottom: 16,
     },
     formContainer: {
-        width: '100%',
+        display: "flex",
+        padding: 20,
+        alignItems: 'center',
     },
     googleButton: {
         backgroundColor: '#6A0DAD',
@@ -162,52 +118,15 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 16,
         alignItems: 'center',
+        width: 'max-content',
     },
     googleButtonText: {
         color: '#FFD700',
         fontWeight: 'bold',
     },
-    orText: {
+    rulesButtonText: {
         color: '#FFD700',
-        textAlign: 'center',
-        marginBottom: 16,
-    },
-    input: {
-        backgroundColor: '#333',
-        color: '#FFD700',
-        padding: 10,
-        borderRadius: 8,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: '#FFD700',
-    },
-    errorText: {
-        color: 'red',
-        marginBottom: 8,
-    },
-    checkboxContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    checkboxLabel: {
-        color: '#FFD700',
-        marginLeft: 8,
-    },
-    forgotPasswordText: {
-        color: '#FFD700',
-        textAlign: 'center',
-        marginBottom: 16,
-        textDecorationLine: 'underline',
-    },
-    loginButton: {
-        backgroundColor: '#6A0DAD',
-        padding: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    loginButtonText: {
-        color: '#FFD700',
-        fontWeight: 'bold',
+        fontStyle: 'italic',
     },
 });
+

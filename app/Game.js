@@ -41,15 +41,15 @@ function GameScreen({ navigation }) {
           const response = await axios.get(`https://spy.blobsandtrees.online/api/game/${gameId}/${currentUser?.email}/players`);
           if (!response.data.players.some(item => item.email === currentUser?.email)) {
             console.log(`User left the game. Redirecting to home screen...`);
-            router.replace("/");
+            router.push("/");
             return;
           }
           setPlayers(response.data.players);
           setRound(response.data.round);
         } catch (error) {
           console.error('Error fetching players:', error);
-          alert("hmm");
-          router.replace("/");
+          console.log("hmm");
+          router.push("/");
         }
       };
 
@@ -119,7 +119,7 @@ function GameScreen({ navigation }) {
         console.error('Error removing player from game:', err);
       }
 
-      router.replace("/");
+      router.push("/");
     } catch (error) {
       console.error('Error leaving game:', error);
     }
@@ -211,6 +211,7 @@ const styles = StyleSheet.create({
     height: 160,
     borderRadius: 80,
     marginBottom: 16,
+    borderRadius: '50%',
   },
   gameText: {
     color: '#FFD700',

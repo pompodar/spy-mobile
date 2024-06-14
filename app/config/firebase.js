@@ -35,7 +35,7 @@ export const signInWithGoogle = () => {
       .post('https://auth.blobsandtrees.online/login-with-google', {'email': email, 'name': name,})
       .then((data) => {
         console.log(data);
-        router.replace('/20');
+        router.push('/GameLobby');
       })
       .catch((error) => {
         console.log(error);
